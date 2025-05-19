@@ -34,7 +34,7 @@ public class GameStartController implements Initializable{
   
   private void graphicAnimation(){
     //Title
-    TranslateTransition tt = new TranslateTransition(Duration.seconds(1), title);
+    TranslateTransition tt = new TranslateTransition(Duration.millis(800), title);
     tt.setFromY(-200);
     tt.setToY(0);
     tt.setCycleCount(1);
