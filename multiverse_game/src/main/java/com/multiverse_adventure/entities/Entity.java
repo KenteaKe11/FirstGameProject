@@ -9,7 +9,7 @@ public abstract class Entity {
 
   protected int x;
   protected int y;
-  private Image img;
+  protected Image img;
 
   public Entity(int origX, int origY, Image img){
     this.x = origX * App.tileSize;

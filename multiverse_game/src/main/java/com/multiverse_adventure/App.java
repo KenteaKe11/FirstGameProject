@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -21,9 +22,9 @@ public class App extends Application {
     public static final int columnCnt = 12;
     public static int height = rowCnt * tileSize;
     public static int width = columnCnt * tileSize;
-    private GameMap gameMap = null;
+    private long previousTime = 0;
+    public static final int fps = 60;
     private List<Entity> entities = new ArrayList<>();
-    private char[][] map = new char[31][31];
 
     private Canvas canvas = new Canvas(width, height);
     private GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -42,125 +43,42 @@ public class App extends Application {
     }
 
 
-    public static int camX = 0;
-    public static int camY = 0;
+    public static int camX = (int) (9.5 * tileSize);
+    public static int camY = (int) (10.5 * tileSize);
     
     public void launchSinglePlayer(){
         //Đổi scene
         Pane root = new Pane(canvas);
         scene.setRoot(root);
-
-        gameMap = new GameMap("hall");
-        map = gameMap.getMap();
-
+        
         AnimationTimer time = new AnimationTimer() {
+            
             @Override
-            public void handle(long arg0) {      
-                cameraTest();
-                update();
-                render();
+            public void handle(long now) {
+                long timeFrame = 1_000_000_000/fps;
+                long delta = now - previousTime;
+                previousTime = now;
+                delta += timeFrame;
+
+                if(delta > timeFrame){
+                    update();
+                    render();
+                    delta -= timeFrame;
+                }
             }
         };
         time.start();
-    }
 
-    private void cameraTest(){
-        //Load map
-        scene.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case A:
-                    if(camX > 0){
-                        camX -= 8;
-                    }
-                    break;
-                case D:
-                    if(camX  < (31 - columnCnt) * tileSize){
-                        camX += 8;
-                    }
-                    break;
-                case W:
-                    if(camY > 0){
-                        camY -= 8;
-                    }
-                    break;
-                case S:
-                    if(camY < (31 - rowCnt) * tileSize){
-                        camY += 8;
-                    }
-                    break;
-                default:
-                    break;
-            }
+        //Xử lý sự kiện bàn phím
+        Entity player = new Player(15, 15, Sprite.player_down.getImage());
+        entities.add(player);
+
+        scene.setOnKeyPressed(e ->{
+            ((Player)player).KeyPressed(e);
         });
-
-        for(int i = camY/tileSize; i <= camY/tileSize + rowCnt && i < 31; i++){
-            for(int j = camX/tileSize; j <= camX/tileSize + columnCnt && j < 31; j++){
-                Entity object = null;
-                boolean isAdded = false;
-                switch (map[i][j]) {
-                    case ' ':
-                        for(Entity entity: entities){
-                            if(entity.getX()/tileSize == j && entity.getY()/tileSize == i){
-                                isAdded = true;
-                                break; 
-                            }
-                        }
-                        if(!isAdded){
-                            object = new Grass(j, i, Sprite.grass.getImage());
-                            entities.add(object); 
-                        }
-                        break;
-                    case '#':
-                        for(Entity entity: entities){
-                            if(entity.getX()/tileSize == j && entity.getY()/tileSize == i){
-                                isAdded = true; 
-                                break; 
-                            }
-                        }
-                        if(!isAdded){
-                            object = new Brick(j, i, Sprite.brick.getImage());
-                            entities.add(object); 
-                        }
-                        break;
-                    case '0':
-                        for(Entity entity: entities){
-                            if(entity.getX()/tileSize == j && entity.getY()/tileSize == i){
-                                isAdded = true;
-                                break; 
-                            }
-                        }
-                        if(!isAdded){
-                            object = new Portal(j, i, Sprite.portal.getImage());
-                            entities.add(object);  
-                        }
-                        break;
-                    case '+':
-                        for(Entity entity: entities){
-                            if(entity.getX()/tileSize == j && entity.getY()/tileSize == i){
-                                isAdded = true;
-                                break; 
-                            }
-                        }
-                        if(!isAdded){
-                            object = new EnergyBrick(j, i, Sprite.energyBrick.getImage());
-                            entities.add(object);   
-                        } 
-                        break;
-                    default:
-                        for(Entity entity: entities){
-                            if(entity.getX()/tileSize == j && entity.getY()/tileSize == i){
-                                isAdded = true;
-                                break; 
-                            }
-                        }
-                        if(!isAdded){
-                           object = new Road(j, i, Sprite.road.getImage());
-                            entities.add(object);  
-                        }
-                        break;
-                }
-            }
-        }
+        scene.setOnKeyReleased(e ->{
+            ((Player)player).KeyRelease(e);
+        });
     }
 
     public void launchMultiPlayer(){

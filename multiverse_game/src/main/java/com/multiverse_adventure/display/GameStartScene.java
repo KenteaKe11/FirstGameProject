@@ -4,14 +4,11 @@ import java.io.IOException;
 
 import com.multiverse_adventure.App;
 
-import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 
 public class GameStartScene {
-
-  private TranslateTransition currentAnimation;
 
   @FXML
   public Scene startScene() throws IOException{
